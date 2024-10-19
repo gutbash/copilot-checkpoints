@@ -4,7 +4,8 @@ import {
   VSCodeButton,
   VSCodePanelView,
   VSCodeBadge,
-  VSCodeDivider
+  VSCodeDivider,
+  VSCodeProgressRing
 } from '@vscode/webview-ui-toolkit/react'
 import { useEditor, EditorContent, Editor, JSONContent } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
@@ -75,6 +76,9 @@ export const Chat = (props: ChatProps): JSX.Element => {
     useConversationHistory()
 
   const chatRef = useRef<HTMLTextAreaElement>(null)
+
+  const [charCount, setCharCount] = useState(0);
+  const MAX_CHAR_LIMIT = 2000; // Set your desired character limit
 
   const scrollToBottom = () => {
     if (!autoScrollContext) return
@@ -420,9 +424,14 @@ export const Chat = (props: ChatProps): JSX.Element => {
   useAutosizeTextArea(chatRef, editorRef.current?.getText() || '')
 
   useEffect(() => {
-    if (editor) editorRef.current = editor
-    editorRef.current?.commands.focus()
-  }, [editor])
+    if (editor) {
+      editorRef.current = editor;
+      editor.on('update', () => {
+        setCharCount(editor.state.doc.textContent.length);
+      });
+    }
+    editorRef.current?.commands.focus();
+  }, [editor]);
 
   useEffect(() => {
     if (editorRef.current) {
@@ -577,14 +586,27 @@ export const Chat = (props: ChatProps): JSX.Element => {
               className={styles.tiptap}
               editor={editorRef.current}
             />
-            <div
-              role="button"
-              onClick={handleSubmitForm}
-              className={styles.chatSubmit}
-            >
-              <span className="codicon codicon-send"></span>
+            <div className={styles.chatControls}>
+              <div className={styles.charCounter}>
+                <VSCodeProgressRing
+                  progress={Math.min((charCount / MAX_CHAR_LIMIT) * 100, 100)}
+                />
+                <span>{charCount}/{MAX_CHAR_LIMIT}</span>
+              </div>
+              <div
+                role="button"
+                onClick={handleSubmitForm}
+                className={styles.chatSubmit}
+              >
+                <span className="codicon codicon-send"></span>
+              </div>
             </div>
           </div>
+          {charCount > MAX_CHAR_LIMIT && (
+            <div className={styles.charLimitWarning}>
+              Character limit exceeded. Please shorten your message.
+            </div>
+          )}
         </form>
       </div>
     </VSCodePanelView>
