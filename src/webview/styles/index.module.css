@@ -470,3 +470,23 @@ pre code {
 .prTitle a {
   color: var(--vscode-textLink-foreground);
 }
+
+.chatControls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 8px;
+}
+
+.charCounter {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+}
+
+.charLimitWarning {
+  color: var(--vscode-errorForeground);
+  font-size: 12px;
+  margin-top: 4px;
+}
